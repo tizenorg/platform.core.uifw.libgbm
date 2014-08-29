@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libgbm
+Description: Mesa GBM library
+Requires.private: libudev >= 151
+Version: 10.2.0-devel
+Libs: -L${libdir} -lgbm
+Libs.private: -ldl
+Cflags: -I${includedir}
