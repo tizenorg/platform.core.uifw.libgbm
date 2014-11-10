@@ -63,7 +63,7 @@ load_backend(const struct backend_desc *backend)
 
    if (backend->builtin) {
       init = backend->builtin;
-   } else { 
+   } else {
       if (name[0] != '/')
          snprintf(path, sizeof path, MODULEDIR "/%s", name);
       else
@@ -122,6 +122,6 @@ _gbm_create_device(int fd)
 
       dev = backend->create_device(fd);
    }
-   
+
    return dev;
 }

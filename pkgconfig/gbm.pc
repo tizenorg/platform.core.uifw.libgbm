@@ -1,12 +1,12 @@
-prefix=/usr/local
+prefix=/usr
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
-Name: libgbm
-Description: Mesa GBM library
+Name: gbm
+Description: Wayland Generic Buffer Management for TIZEN (from Mesa)
+Version: 10.2.0
 Requires.private: libudev >= 151
-Version: 10.2.0-devel
 Libs: -L${libdir} -lgbm
 Libs.private: -ldl
 Cflags: -I${includedir}
