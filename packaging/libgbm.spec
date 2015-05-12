@@ -7,8 +7,6 @@ License:    MIT
 
 Source0:    %{name}.tar.gz
 
-Provides:   libgbm.so
-
 # Requirements
 BuildRequires:  autoconf
 BuildRequires:  libtool
@@ -32,7 +30,6 @@ Development header files for use with Wayland GBM
 
 %build
 export GBM_SO_VER=%{version}
-make clean
 make
 
 %install

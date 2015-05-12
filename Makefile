@@ -40,27 +40,26 @@ clean:
 	done
 
 install: all
-	cp $(SRC_DIR)/gbm.h $(prefix)/include/
-	-mkdir $(prefix)/include/gbm
-#	cp $(SRC_DIR)/gbm.h $(prefix)/include/gbm/
-	cp $(SRC_DIR)/backend.h $(prefix)/include/gbm/
-	cp $(SRC_DIR)/common_drm.h $(prefix)/include/gbm/
-	cp $(SRC_DIR)/common.h $(prefix)/include/gbm/
-	cp $(SRC_DIR)/gbmint.h $(prefix)/include/gbm/
-	cp pkgconfig/gbm.pc $(prefix)/lib/pkgconfig/
-	cp libgbm.so.$(GBM_SO_VER) $(prefix)/lib/
+	cp $(SRC_DIR)/gbm.h $(includedir)/
+	-mkdir $(includedir)/gbm/
+	cp $(SRC_DIR)/backend.h $(includedir)/gbm/
+	cp $(SRC_DIR)/common_drm.h $(includedir)/gbm/
+	cp $(SRC_DIR)/common.h $(includedir)/gbm/
+	cp $(SRC_DIR)/gbmint.h $(includedir)/gbm/
+	cp pkgconfig/gbm.pc $(libdir)/pkgconfig/
+	cp libgbm.so.$(GBM_SO_VER) $(libdir)/
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
 		$(MAKE) $@ -C $$dir ; \
 	done
 
 uninstall:
-	-rm -f $(prefix)/include/gbm.h
-	-rm -f $(prefix)/include/gbm/backend.h
-	-rm -f $(prefix)/include/gbm/common_drm.h
-	-rm -f $(prefix)/include/gbm/common.h
-	-rm -f $(prefix)/include/gbm/gbmint.h
-	-rm -f $(prefix)/lib/pkgconfig/gbm.pc
-	-rm -f $(prefix)/lib/libgbm.so.$(GBM_SO_VER)
+	-rm -f $(includedir)/gbm.h
+	-rm -f $(includedir)/gbm/backend.h
+	-rm -f $(includedir)/gbm/common_drm.h
+	-rm -f $(includedir)/gbm/common.h
+	-rm -f $(includedir)/gbm/gbmint.h
+	-rm -f $(libdir)/pkgconfig/gbm.pc
+	-rm -f $(libdir)/libgbm.so.$(GBM_SO_VER)
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
 		$(MAKE) $@ -C $$dir ; \
 	done
