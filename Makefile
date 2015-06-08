@@ -10,7 +10,7 @@ CFLAGS += -Wall -ludev -fPIC
 GBM_BACKENDS_DIR = $(SRC_DIR)/backends
 
 #gbm backend module location
-CFLAGS += -DMODULEDIR='"/usr/lib/gbm"'
+CFLAGS += -DMODULEDIR='"$(libdir)/gbm"'
 
 #gbm main source
 GBM_SRCS +=  \
