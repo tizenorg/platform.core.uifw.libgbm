@@ -30,7 +30,8 @@ Development header files for use with Wayland GBM
 
 %build
 export GBM_SO_VER=%{version}
-make
+make clean
+make libdir=%{_libdir}
 
 %install
 mkdir -p %{buildroot}%{_includedir}
