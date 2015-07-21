@@ -14,6 +14,8 @@ BuildRequires:  systemd-devel
 BuildRequires:  pkgconfig(libudev)
 BuildRequires:  libdrm-devel
 
+Provides:	libgbm.so
+
 %description
 Wayland Generic Buffer Management for TIZEN
 
