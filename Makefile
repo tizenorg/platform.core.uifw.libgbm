@@ -1,4 +1,3 @@
-GBM_SO_VER ?= no_ver
 SRC_DIR = ./src
 
 #CROSS_COMPILE ?= arm-none-linux-gnueabi-
@@ -23,7 +22,7 @@ GBM_SRCS +=  \
 
 GBM_OBJS := $(GBM_SRCS:.c=.o)
 
-libgbm.so.$(GBM_SO_VER): $(GBM_OBJS)
+libgbm.so: $(GBM_OBJS)
 	$(TARGET_CC) -shared -o $@ $(GBM_OBJS) $(CFLAGS)
 backend: 
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
@@ -31,10 +30,10 @@ backend:
 	done
 
 .DEFAULT_GOAL = all
-all: libgbm.so.$(GBM_SO_VER) backend
+all: libgbm.so backend
 
 clean:
-	-rm -f $(GBM_OBJS) libgbm.so.$(GBM_SO_VER)
+	-rm -f $(GBM_OBJS) libgbm.so
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
 		$(MAKE) $@ -C $$dir ; \
 	done
@@ -47,7 +46,7 @@ install: all
 	cp $(SRC_DIR)/common.h $(includedir)/gbm/
 	cp $(SRC_DIR)/gbmint.h $(includedir)/gbm/
 	cp pkgconfig/gbm.pc $(libdir)/pkgconfig/
-	cp libgbm.so.$(GBM_SO_VER) $(libdir)/
+	cp libgbm.so $(libdir)/
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
 		$(MAKE) $@ -C $$dir ; \
 	done
@@ -59,7 +58,7 @@ uninstall:
 	-rm -f $(includedir)/gbm/common.h
 	-rm -f $(includedir)/gbm/gbmint.h
 	-rm -f $(libdir)/pkgconfig/gbm.pc
-	-rm -f $(libdir)/libgbm.so.$(GBM_SO_VER)
+	-rm -f $(libdir)/libgbm.so
 	@for dir in $(GBM_BACKENDS_DIR) ; do \
 		$(MAKE) $@ -C $$dir ; \
 	done
