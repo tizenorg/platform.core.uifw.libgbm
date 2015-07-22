@@ -1,18 +1,19 @@
-Summary:    Wayland GBM for TIZEN
-Name:       libgbm
-Version:    1.0.0s
-Release:    1
-Group:      System/Libraries
-License:    MIT
+%define MAJOR_VER	1
+%define MINOR_VER	0s
 
-Source0:    %{name}.tar.gz
+Summary:	Wayland GBM for TIZEN
+Name:		libgbm
+Version:	%{MAJOR_VER}.%{MINOR_VER}
+Release:	1
+Group:		System/Libraries
+License:	MIT
+Source:		%{name}-%{version}.tar.gz
 
-# Requirements
-BuildRequires:  autoconf
-BuildRequires:  libtool
-BuildRequires:  systemd-devel
-BuildRequires:  pkgconfig(libudev)
-BuildRequires:  libdrm-devel
+BuildRequires:	autoconf
+BuildRequires:	libtool
+BuildRequires:	systemd-devel
+BuildRequires:	pkgconfig(libudev)
+BuildRequires:	libdrm-devel
 
 %description
 Wayland Generic Buffer Management for TIZEN
@@ -30,13 +31,16 @@ Development header files for use with Wayland GBM
 
 %build
 make clean
-make libdir=%{_libdir}
+make libdir=%{_libdir} major_ver=%{MAJOR_VER} minor_ver=%{MINOR_VER}
 
 %install
 mkdir -p %{buildroot}%{_includedir}
 mkdir -p %{buildroot}%{_libdir}/pkgconfig
 
-%makeinstall
+%makeinstall major_ver=%{MAJOR_VER} minor_ver=%{MINOR_VER}
+
+ln -sf libgbm.so.%{MAJOR_VER}.%{MINOR_VER}	%{buildroot}%{_libdir}/libgbm.so.%{MAJOR_VER}
+ln -sf libgbm.so.%{MAJOR_VER}			%{buildroot}%{_libdir}/libgbm.so
 
 %post -p /sbin/ldconfig
 
@@ -46,6 +50,8 @@ mkdir -p %{buildroot}%{_libdir}/pkgconfig
 %manifest packaging/libgbm.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libgbm.so
+%{_libdir}/libgbm.so.%{MAJOR_VER}
+%{_libdir}/libgbm.so.%{MAJOR_VER}.%{MINOR_VER}
 
 %files devel
 %defattr(-,root,root,-)
