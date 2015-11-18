@@ -44,7 +44,6 @@ install: all
 	cp $(SRC_DIR)/gbm.h $(includedir)/
 	-mkdir $(includedir)/gbm/
 	cp $(SRC_DIR)/backend.h $(includedir)/gbm/
-	cp $(SRC_DIR)/common_drm.h $(includedir)/gbm/
 	cp $(SRC_DIR)/common.h $(includedir)/gbm/
 	cp $(SRC_DIR)/gbmint.h $(includedir)/gbm/
 	cp pkgconfig/gbm.pc $(libdir)/pkgconfig/
@@ -56,7 +55,6 @@ install: all
 uninstall:
 	-rm -f $(includedir)/gbm.h
 	-rm -f $(includedir)/gbm/backend.h
-	-rm -f $(includedir)/gbm/common_drm.h
 	-rm -f $(includedir)/gbm/common.h
 	-rm -f $(includedir)/gbm/gbmint.h
 	-rm -f $(libdir)/pkgconfig/gbm.pc
