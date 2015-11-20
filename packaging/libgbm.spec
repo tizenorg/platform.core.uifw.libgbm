@@ -46,6 +46,7 @@ ln -sf libgbm.so.%{MAJOR_VER}			%{buildroot}%{_libdir}/libgbm.so
 
 %files
 %manifest packaging/libgbm.manifest
+%license COPYING
 %defattr(-,root,root,-)
 %{_libdir}/libgbm.so
 %{_libdir}/libgbm.so.%{MAJOR_VER}
