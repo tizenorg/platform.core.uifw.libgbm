@@ -39,4 +39,7 @@ gbm_tbm_surface_get_user_data(struct gbm_tbm_surface *surf);
 tbm_bo
 gbm_tbm_bo_get_tbm_bo(struct gbm_tbm_bo *bo);
 
+uint32_t
+gbm_tbm_bo_get_stride(struct gbm_tbm_bo *bo);
+
 #endif
