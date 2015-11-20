@@ -46,6 +46,12 @@ gbm_tbm_bo_get_tbm_bo(struct gbm_tbm_bo *bo)
 }
 
 GBM_EXPORT uint32_t
+gbm_tbm_bo_get_stride(struct gbm_tbm_bo *bo)
+{
+   return bo->base.stride;
+}
+
+GBM_EXPORT uint32_t
 gbm_tbm_surface_get_width(struct gbm_tbm_surface *surf)
 {
    return surf->base.width;
