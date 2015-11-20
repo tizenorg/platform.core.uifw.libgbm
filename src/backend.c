@@ -32,9 +32,14 @@
 #include <limits.h>
 #include <dlfcn.h>
 
+#include "config.h"
 #include "backend.h"
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
+
+#if HAVE_TBM
+extern const struct gbm_backend gbm_tbm_backend;
+#endif
 
 struct backend_desc {
    const char *name;
@@ -42,9 +47,9 @@ struct backend_desc {
 };
 
 static const struct backend_desc backends[] = {
-   { "gbm_dri.so", NULL },
-   { "gbm_gallium_drm.so", NULL },
-   { "gbm_tbm.so", NULL },
+#if HAVE_TBM
+   { "gbm_tbm.so", &gbm_tbm_backend },
+#endif
 };
 
 static const void *
