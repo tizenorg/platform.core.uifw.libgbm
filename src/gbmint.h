@@ -111,7 +111,4 @@ struct gbm_backend {
    struct gbm_device *(*create_device)(int fd);
 };
 
-struct gbm_device *
-_gbm_mesa_get_device(int fd);
-
 #endif
