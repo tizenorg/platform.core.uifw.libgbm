@@ -33,10 +33,32 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <limits.h>
 
+#include "config.h"
 #include "gbm_tbmint.h"
 #include <tbm_surface_internal.h>
 #include <wayland-tbm-server.h>
 
+static int tbm_private_data;
+#define TBM_DATA_KEY ((unsigned long)&tbm_private_data)
+
+#ifdef USE_TBM_QUEUE
+struct gbm_bo* __gbm_tbm_get_gbm_bo(tbm_surface_h surf);
+
+GBM_EXPORT tbm_surface_queue
+gbm_tbm_get_surface_queue(struct gbm_surface* surface)
+{
+   struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
+   return surf->queue;
+}
+
+GBM_EXPORT tbm_surface_h
+gbm_tbm_get_surface(struct gbm_bo* bo)
+{
+   struct gbm_tbm_bo *_bo = gbm_tbm_bo(bo);
+   return _bo->tbm_surf;
+}
+
+#else
 GBM_EXPORT tbm_bo
 gbm_tbm_bo_get_tbm_bo(struct gbm_tbm_bo *bo)
 {
@@ -104,6 +126,7 @@ gbm_tbm_device_set_callback_surface_release_buffer(struct gbm_tbm_device *gbm_tb
 {
    gbm_tbm->base.surface_release_buffer = callback;
 }
+#endif
 
 static int
 __gbm_tbm_is_format_supported(struct gbm_device *gbm,
@@ -112,10 +135,8 @@ __gbm_tbm_is_format_supported(struct gbm_device *gbm,
 {
    switch (format)
    {
-   case GBM_BO_FORMAT_XRGB8888:
    case GBM_FORMAT_XRGB8888:
        break;
-   case GBM_BO_FORMAT_ARGB8888:
    case GBM_FORMAT_ARGB8888:
        if (usage & GBM_BO_USE_SCANOUT)
 	   return 0;
@@ -157,7 +178,6 @@ __gbm_tbm_bo_get_fd(struct gbm_bo *_bo)
    tbo = tbm_surface_internal_get_bo(bo->tbm_surf, 0);
    if (!tbo)
    {
-      fprintf(stderr, "%s::tbm_surface_internal_get_bo() failed.\n", __FUNCTION__);
 	  return 0;
    }
    handle = tbm_bo_get_handle(tbo, TBM_DEVICE_MM);
@@ -225,14 +245,13 @@ __gbm_tbm_bo_import(struct gbm_device *gbm, uint32_t type,
 }
 
 static struct gbm_bo *
-__gbm_tbm_bo_create(struct gbm_device *gbm,
+__gbm_tbm_bo_create_by_tbm_surface(struct gbm_device *gbm,
+          tbm_surface_h tbm_surf,
 		  uint32_t width, uint32_t height,
 		  uint32_t format, uint32_t usage)
 {
    struct gbm_tbm_bo *bo;
    uint32_t size, offset, pitch;
-   int flags = TBM_BO_DEFAULT;
-   int surface_format;
    tbm_bo_handle handle;
    tbm_bo tbo;
 
@@ -245,37 +264,7 @@ __gbm_tbm_bo_create(struct gbm_device *gbm,
    bo->base.height = height;
    bo->base.format = format;
    bo->usage = usage;
-
-   switch (format)
-   {
-   case GBM_FORMAT_RGB565:
-       surface_format = TBM_FORMAT_BGR565;
-       break;
-   case GBM_FORMAT_XRGB8888:
-   case GBM_BO_FORMAT_XRGB8888:
-       surface_format = TBM_FORMAT_XRGB8888;
-       break;
-   case GBM_FORMAT_ARGB8888:
-   case GBM_BO_FORMAT_ARGB8888:
-   case GBM_FORMAT_ABGR8888:
-       surface_format = TBM_FORMAT_ABGR8888;
-       break;
-   default:
-       free(bo);
-       return NULL;
-   }
-
-   if ((usage & GBM_BO_USE_SCANOUT) || (usage & GBM_BO_USE_CURSOR_64X64))
-   {
-       flags |= TBM_BO_SCANOUT;
-   }
-
-   bo->tbm_surf = tbm_surface_internal_create_with_flags(width, height, surface_format, flags);
-   if (!bo->tbm_surf)
-   {
-      free(bo);
-      return NULL;
-   }
+   bo->tbm_surf = tbm_surf;
 
    if (!tbm_surface_internal_get_plane_data(bo->tbm_surf, 0, &size, &offset, &pitch))
    {
@@ -289,9 +278,147 @@ __gbm_tbm_bo_create(struct gbm_device *gbm,
    handle = tbm_bo_get_handle(tbo, TBM_DEVICE_DEFAULT);
    bo->base.handle.u64 = handle.u64;
 
+   tbm_bo_add_user_data(tbo, TBM_DATA_KEY, NULL);
+   tbm_bo_set_user_data(tbo, TBM_DATA_KEY, &bo->base);
+
    return &bo->base;
 }
 
+static struct gbm_bo *
+__gbm_tbm_bo_create(struct gbm_device *gbm,
+		  uint32_t width, uint32_t height,
+		  uint32_t format, uint32_t usage)
+{
+   tbm_surface_h tbm_surf;
+   int flags = TBM_BO_DEFAULT;
+
+   if ((usage & GBM_BO_USE_SCANOUT) || (usage & GBM_BO_USE_CURSOR_64X64))
+   {
+       flags |= TBM_BO_SCANOUT;
+   }
+
+   tbm_surf = tbm_surface_internal_create_with_flags(width, height, format, flags);
+   if (tbm_surf)
+   {
+      return NULL;
+   }
+
+   return __gbm_tbm_bo_create_by_tbm_surface(gbm, tbm_surf, width, height, format, flags);
+}
+
+
+#ifdef USE_TBM_QUEUE
+struct gbm_bo*
+__gbm_tbm_get_gbm_bo(tbm_surface_h surf)
+{
+   tbm_bo bo;
+   struct gbm_bo* gbo = NULL;
+
+   bo = tbm_surface_internal_get_bo(surf, 0);
+   if (!bo) return NULL;
+
+   if (tbm_bo_get_user_data(bo, TBM_DATA_KEY, (void**)&gbo))
+   {
+      return gbo;
+   }
+
+   return NULL;
+}
+
+static struct gbm_surface *
+__gbm_tbm_surface_create(struct gbm_device *gbm,
+		       uint32_t width, uint32_t height,
+		       uint32_t format, uint32_t flags)
+{
+   struct gbm_tbm_surface *surf;
+   int tbm_flags = 0;
+
+   surf = calloc(1, sizeof *surf);
+   if (surf == NULL)
+       return NULL;
+
+   surf->base.gbm = gbm;
+   surf->base.width = width;
+   surf->base.height = height;
+   surf->base.format = format;
+   surf->base.flags = flags;
+
+   if ((flags & GBM_BO_USE_SCANOUT) || (flags & GBM_BO_USE_CURSOR_64X64))
+   {
+       tbm_flags |= TBM_BO_SCANOUT;
+   }
+
+   surf->queue = tbm_surface_queue_create(3, width, height, format, tbm_flags);
+   if (!surf->queue)
+   {
+      free(surf);
+      return NULL;
+   }
+
+   return &surf->base;
+}
+
+static void
+__gbm_tbm_surface_destroy(struct gbm_surface *surface)
+{
+   struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
+
+   tbm_surface_queue_destroy(surf->queue);
+   free(surf);
+}
+
+static struct gbm_bo *
+__gbm_tbm_surface_lock_front_buffer(struct gbm_surface *surface)
+{
+   struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
+   int num_duty;
+   tbm_surface_h tbm_surf;
+   struct gbm_bo *gbo;
+
+   if ((num_duty = tbm_surface_queue_can_acquire(surf->queue, 1)))
+   {
+      if ((TBM_SURFACE_QUEUE_ERROR_NONE == tbm_surface_queue_acquire_surface(surf->queue, &tbm_surf)))
+      {
+         gbo = __gbm_tbm_get_gbm_bo(tbm_surf);
+         if (gbo)
+            return gbo;
+
+         gbo = __gbm_tbm_bo_create_by_tbm_surface(surf->base.gbm,
+                        tbm_surf,
+                        surf->base.width,
+                        surf->base.height,
+                        surf->base.format,
+                        surf->base.flags);
+         if (gbo)
+         {
+            return gbo;
+         }
+      }
+   }
+
+   return NULL;
+}
+
+static void
+__gbm_tbm_surface_release_buffer(struct gbm_surface *surface,
+                                  struct gbm_bo *gbo)
+{
+   struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
+   struct gbm_tbm_bo *bo = gbm_tbm_bo(gbo);
+   tbm_surface_h tbm_surf;
+
+   tbm_surf = bo->tbm_surf;
+   tbm_surface_queue_release_surface(surf->queue, tbm_surf);
+}
+
+static int
+__gbm_tbm_surface_has_free_buffers(struct gbm_surface *surface)
+{
+   struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
+
+   return tbm_surface_queue_can_acquire(surf->queue, 0);
+}
+#else
 static struct gbm_surface *
 __gbm_tbm_surface_create(struct gbm_device *gbm,
 		       uint32_t width, uint32_t height,
@@ -319,6 +446,7 @@ __gbm_tbm_surface_destroy(struct gbm_surface *_surf)
 
    free(surf);
 }
+#endif
 
 static void
 __tbm_destroy(struct gbm_device *gbm)
@@ -355,6 +483,11 @@ __tbm_device_create(int fd)
    dri->base.destroy = __tbm_destroy;
    dri->base.surface_create = __gbm_tbm_surface_create;
    dri->base.surface_destroy = __gbm_tbm_surface_destroy;
+#ifdef USE_TBM_QUEUE
+   dri->base.surface_lock_front_buffer = __gbm_tbm_surface_lock_front_buffer;
+   dri->base.surface_release_buffer = __gbm_tbm_surface_release_buffer;
+   dri->base.surface_has_free_buffers = __gbm_tbm_surface_has_free_buffers;
+#endif
    dri->base.name = "gbm_tbm";
 
    return &dri->base;

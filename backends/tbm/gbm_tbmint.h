@@ -31,6 +31,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <tbm_bufmgr.h>
 #include <tbm_surface.h>
+#ifdef USE_TBM_QUEUE
+#include <tbm_surface_queue.h>
+#endif
+
 #include "gbm_tbm.h"
 #include "gbmint.h"
 
@@ -49,6 +53,10 @@ struct gbm_tbm_bo {
 struct gbm_tbm_surface {
    struct gbm_surface base;
    void *tbm_private;
+
+#ifdef USE_TBM_QUEUE
+   tbm_surface_queue queue;
+#endif
 };
 
 static inline struct gbm_tbm_device *
