@@ -2,6 +2,18 @@
 #define _GBM_TBM_H_
 
 #include <gbm.h>
+
+#ifdef USE_TBM_QUEUE
+#include <tbm_surface.h>
+#include <tbm_surface_queue.h>
+
+tbm_surface_queue_h
+gbm_tbm_get_surface_queue(struct gbm_surface* surf);
+
+tbm_surface_h
+gbm_tbm_get_surface(struct gbm_bo* bo);
+
+#else
 #include <tbm_bufmgr.h>
 
 struct gbm_tbm_device;
@@ -42,4 +54,5 @@ gbm_tbm_bo_get_tbm_bo(struct gbm_tbm_bo *bo);
 uint32_t
 gbm_tbm_bo_get_stride(struct gbm_tbm_bo *bo);
 
+#endif
 #endif
