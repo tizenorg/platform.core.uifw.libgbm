@@ -44,7 +44,7 @@ static int tbm_private_data;
 #ifdef USE_TBM_QUEUE
 struct gbm_bo* __gbm_tbm_get_gbm_bo(tbm_surface_h surf);
 
-GBM_EXPORT tbm_surface_queue
+GBM_EXPORT tbm_surface_queue_h
 gbm_tbm_get_surface_queue(struct gbm_surface* surface)
 {
    struct gbm_tbm_surface *surf = gbm_tbm_surface(surface);
@@ -377,7 +377,7 @@ __gbm_tbm_surface_lock_front_buffer(struct gbm_surface *surface)
 
    if ((num_duty = tbm_surface_queue_can_acquire(surf->queue, 1)))
    {
-      if ((TBM_SURFACE_QUEUE_ERROR_NONE == tbm_surface_queue_acquire_surface(surf->queue, &tbm_surf)))
+      if ((TBM_SURFACE_QUEUE_ERROR_NONE == tbm_surface_queue_acquire(surf->queue, &tbm_surf)))
       {
          gbo = __gbm_tbm_get_gbm_bo(tbm_surf);
          if (gbo)
@@ -408,7 +408,7 @@ __gbm_tbm_surface_release_buffer(struct gbm_surface *surface,
    tbm_surface_h tbm_surf;
 
    tbm_surf = bo->tbm_surf;
-   tbm_surface_queue_release_surface(surf->queue, tbm_surf);
+   tbm_surface_queue_release(surf->queue, tbm_surf);
 }
 
 static int

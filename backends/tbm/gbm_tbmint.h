@@ -55,7 +55,7 @@ struct gbm_tbm_surface {
    void *tbm_private;
 
 #ifdef USE_TBM_QUEUE
-   tbm_surface_queue queue;
+   tbm_surface_queue_h queue;
 #endif
 };
 
