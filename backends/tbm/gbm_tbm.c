@@ -298,7 +298,7 @@ __gbm_tbm_bo_create(struct gbm_device *gbm,
    }
 
    tbm_surf = tbm_surface_internal_create_with_flags(width, height, format, flags);
-   if (tbm_surf)
+   if (!tbm_surf)
    {
       return NULL;
    }
