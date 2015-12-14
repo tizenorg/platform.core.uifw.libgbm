@@ -41,7 +41,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static int tbm_private_data;
 #define TBM_DATA_KEY ((unsigned long)&tbm_private_data)
 
-#ifdef USE_TBM_QUEUE
 struct gbm_bo* __gbm_tbm_get_gbm_bo(tbm_surface_h surf);
 
 GBM_EXPORT tbm_surface_queue_h
@@ -57,76 +56,6 @@ gbm_tbm_get_surface(struct gbm_bo* bo)
    struct gbm_tbm_bo *_bo = gbm_tbm_bo(bo);
    return _bo->tbm_surf;
 }
-
-#else
-GBM_EXPORT tbm_bo
-gbm_tbm_bo_get_tbm_bo(struct gbm_tbm_bo *bo)
-{
-   tbm_bo tbo;
-   tbo = tbm_surface_internal_get_bo(bo->tbm_surf, 0);
-   return tbo;
-}
-
-GBM_EXPORT uint32_t
-gbm_tbm_bo_get_stride(struct gbm_tbm_bo *bo)
-{
-   return bo->base.stride;
-}
-
-GBM_EXPORT uint32_t
-gbm_tbm_surface_get_width(struct gbm_tbm_surface *surf)
-{
-   return surf->base.width;
-}
-
-GBM_EXPORT uint32_t
-gbm_tbm_surface_get_height(struct gbm_tbm_surface *surf)
-{
-   return surf->base.height;
-}
-
-GBM_EXPORT uint32_t
-gbm_tbm_surface_get_format(struct gbm_tbm_surface *surf)
-{
-   return surf->base.format;
-}
-
-GBM_EXPORT uint32_t
-gbm_tbm_surface_get_flags(struct gbm_tbm_surface *surf)
-{
-   return surf->base.flags;
-}
-
-GBM_EXPORT void
-gbm_tbm_surface_set_user_data(struct gbm_tbm_surface *surf, void *data)
-{
-   surf->tbm_private = data;
-}
-
-GBM_EXPORT void *
-gbm_tbm_surface_get_user_data(struct gbm_tbm_surface *surf)
-{
-   return surf->tbm_private;
-}
-
-GBM_EXPORT void
-gbm_tbm_device_set_callback_surface_has_free_buffers(struct gbm_tbm_device *gbm_tbm, int (*callback)(struct gbm_surface *))
-{
-   gbm_tbm->base.surface_has_free_buffers = callback;
-}
-
-GBM_EXPORT void
-gbm_tbm_device_set_callback_surface_lock_front_buffer(struct gbm_tbm_device *gbm_tbm, struct gbm_bo *(*callback)(struct gbm_surface *))
-{
-   gbm_tbm->base.surface_lock_front_buffer = callback;
-}
-
-GBM_EXPORT void
-gbm_tbm_device_set_callback_surface_release_buffer(struct gbm_tbm_device *gbm_tbm, void (*callback)(struct gbm_surface *, struct gbm_bo *))
-{
-   gbm_tbm->base.surface_release_buffer = callback;
-}
-#endif
 
 static int
 __gbm_tbm_is_format_supported(struct gbm_device *gbm,
@@ -306,8 +235,6 @@ __gbm_tbm_bo_create(struct gbm_device *gbm,
    return __gbm_tbm_bo_create_by_tbm_surface(gbm, tbm_surf, width, height, format, flags);
 }
 
-
-#ifdef USE_TBM_QUEUE
 struct gbm_bo*
 __gbm_tbm_get_gbm_bo(tbm_surface_h surf)
 {
@@ -418,35 +345,6 @@ __gbm_tbm_surface_has_free_buffers(struct gbm_surface *surface)
 
    return tbm_surface_queue_can_acquire(surf->queue, 0);
 }
-#else
-static struct gbm_surface *
-__gbm_tbm_surface_create(struct gbm_device *gbm,
-		       uint32_t width, uint32_t height,
-		       uint32_t format, uint32_t flags)
-{
-   struct gbm_tbm_surface *surf;
-
-   surf = calloc(1, sizeof *surf);
-   if (surf == NULL)
-       return NULL;
-
-   surf->base.gbm = gbm;
-   surf->base.width = width;
-   surf->base.height = height;
-   surf->base.format = format;
-   surf->base.flags = flags;
-
-   return &surf->base;
-}
-
-static void
-__gbm_tbm_surface_destroy(struct gbm_surface *_surf)
-{
-   struct gbm_tbm_surface *surf = gbm_tbm_surface(_surf);
-
-   free(surf);
-}
-#endif
 
 static void
 __tbm_destroy(struct gbm_device *gbm)
@@ -483,11 +381,9 @@ __tbm_device_create(int fd)
    dri->base.destroy = __tbm_destroy;
    dri->base.surface_create = __gbm_tbm_surface_create;
    dri->base.surface_destroy = __gbm_tbm_surface_destroy;
-#ifdef USE_TBM_QUEUE
    dri->base.surface_lock_front_buffer = __gbm_tbm_surface_lock_front_buffer;
    dri->base.surface_release_buffer = __gbm_tbm_surface_release_buffer;
    dri->base.surface_has_free_buffers = __gbm_tbm_surface_has_free_buffers;
-#endif
    dri->base.name = "gbm_tbm";
 
    return &dri->base;
