@@ -83,6 +83,16 @@ GBM_EXPORT int
 gbm_device_is_format_supported(struct gbm_device *gbm,
                                uint32_t format, uint32_t usage)
 {
+   switch (format)
+   {
+   case GBM_BO_FORMAT_XRGB8888:
+      format = GBM_FORMAT_XRGB8888;
+      break;
+   case GBM_BO_FORMAT_ARGB8888:
+      format = GBM_FORMAT_ABGR8888;
+      break;
+   }
+
    return gbm->is_format_supported(gbm, format, usage);
 }
 
@@ -321,6 +331,16 @@ gbm_bo_create(struct gbm_device *gbm,
        (width != 64 || height != 64))
       return NULL;
 
+   switch (format)
+   {
+   case GBM_BO_FORMAT_XRGB8888:
+      format = GBM_FORMAT_XRGB8888;
+      break;
+   case GBM_BO_FORMAT_ARGB8888:
+      format = GBM_FORMAT_ABGR8888;
+      break;
+   }
+
    return gbm->bo_create(gbm, width, height, format, usage);
 }
 
@@ -375,6 +395,16 @@ gbm_surface_create(struct gbm_device *gbm,
                    uint32_t width, uint32_t height,
 		   uint32_t format, uint32_t flags)
 {
+   switch (format)
+   {
+   case GBM_BO_FORMAT_XRGB8888:
+      format = GBM_FORMAT_XRGB8888;
+      break;
+   case GBM_BO_FORMAT_ARGB8888:
+      format = GBM_FORMAT_ABGR8888;
+      break;
+   }
+
    return gbm->surface_create(gbm, width, height, format, flags);
 }
 
