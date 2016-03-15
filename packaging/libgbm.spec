@@ -30,7 +30,11 @@ Development header files for use with Wayland GBM
 %setup -q -n %{name}
 
 %build
-%reconfigure --disable-static --enable-tbm-queue
+%if "%_repository" == "emulator32-wayland" || "%_repository" == "emulator64-wayland"
+%reconfigure --disable-static --disable-tbm
+%else
+%reconfigure --disable-static --enable-tbm --enable-tbm-queue
+%endif
 make libdir=%{_libdir} major_ver=%{MAJOR_VER} minor_ver=%{MINOR_VER}
 
 %install
