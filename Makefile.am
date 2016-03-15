@@ -38,11 +38,12 @@ AM_CFLAGS += \
 libgbm_la_LIBADD += \
 	$(TBM_LIBS)
 
+endif
+
 libgbmtbmincludedir=$(includedir)/gbm
 libgbmtbminclude_HEADERS = \
 	backends/tbm/gbm_tbm.h \
 	backends/tbm/gbm_tbmint.h
 
-endif
 
 CLEANFILES = 
