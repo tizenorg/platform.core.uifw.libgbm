@@ -82,8 +82,10 @@ load_backend(const struct backend_desc *backend)
       }
 
       init = dlsym(module, entrypoint);
-      if (!init)
+      if (!init) {
+         dlclose(module);
          return NULL;
+      }
    }
 
    return init;
