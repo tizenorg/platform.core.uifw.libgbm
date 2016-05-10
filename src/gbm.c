@@ -104,8 +104,10 @@ GBM_EXPORT void
 gbm_device_destroy(struct gbm_device *gbm)
 {
    gbm->refcount--;
-   if (gbm->refcount == 0)
+   if (gbm->refcount == 0) {
       gbm->destroy(gbm);
+      _gbm_close_device();
+   }
 }
 
 /** Create a gbm device for allocating buffers
