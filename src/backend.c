@@ -87,6 +87,7 @@ load_backend(const struct backend_desc *backend)
          return NULL;
       }
    }
+   dlclose(module);
 
    return init;
 }
