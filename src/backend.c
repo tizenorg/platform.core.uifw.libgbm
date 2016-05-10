@@ -37,6 +37,8 @@
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
 
+static void *g_gbm_module;
+
 #if HAVE_TBM
 extern const struct gbm_backend gbm_tbm_backend;
 #endif
@@ -64,6 +66,9 @@ load_backend(const struct backend_desc *backend)
    if (backend == NULL)
       return NULL;
 
+   if (g_gbm_module)
+      return NULL;
+
    name = backend->name;
 
    if (backend->builtin) {
@@ -87,6 +92,7 @@ load_backend(const struct backend_desc *backend)
          return NULL;
       }
    }
+   g_gbm_module = module;
 
    return init;
 }
@@ -132,3 +138,13 @@ _gbm_create_device(int fd)
 
    return dev;
 }
+
+void
+_gbm_close_device(void)
+{
+   if (g_gbm_module) {
+      dlclose(g_gbm_module);
+      g_gbm_module = NULL;
+   }
+}
+
