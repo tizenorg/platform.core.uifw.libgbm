@@ -59,7 +59,7 @@ load_backend(const struct backend_desc *backend)
 {
    char path[PATH_MAX];
    const void *init = NULL;
-   void *module;
+   void *module = NULL;
    const char *name;
    const char *entrypoint = "gbm_backend";
 
