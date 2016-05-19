@@ -30,7 +30,8 @@ Development header files for use with Wayland GBM
 %setup -q -n %{name}
 
 %build
-%reconfigure --disable-static --enable-tbm --enable-tbm-queue
+%reconfigure --disable-static --enable-tbm --enable-tbm-queue \
+            CFLAGS="${CFLAGS} -Wall -Werror"
 make libdir=%{_libdir} major_ver=%{MAJOR_VER} minor_ver=%{MINOR_VER}
 
 %install
